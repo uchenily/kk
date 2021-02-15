@@ -3,6 +3,8 @@
 
 void disassembleChunk(Chunk * chunk, const char * name) {
     printf("=== %s ===\n", name);
+    printf("Offset  LineNo  OpCode(s)\n");
+    printf("-------------------------\n");
 
     for(int offset = 0; offset < chunk->count; ) {
         offset = disassembleInstruction(chunk, offset);
@@ -10,7 +12,13 @@ void disassembleChunk(Chunk * chunk, const char * name) {
 }
 
 int disassembleInstruction(Chunk * chunk, int offset) {
-    printf("%04d ", offset);
+    printf("%04d     ", offset);
+    if(offset == 0 ||
+            offset > 0 && chunk->lines[offset] != chunk->lines[offset - 1]) {
+        printf("%4dl  ", chunk->lines[offset]);
+    } else {
+        printf("%7s", "");
+    }
 
     byte_t instruction = chunk->codes[offset];
     byte_t code;

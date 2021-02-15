@@ -13,13 +13,14 @@ typedef uint8_t byte_t;
 
 typedef struct {
     byte_t *     codes;
+    int *        lines; // store line number information
     int          count;
     int          capacity;
     KkValueArray constants;
 } Chunk;
 
 void initChunk(Chunk * chunk);
-void writeChunk(Chunk * chunk, byte_t byte);
+void writeChunk(Chunk * chunk, byte_t byte, int line);
 void resetChunk(Chunk * chunk);
 
 void addConstant(Chunk * chunk, KkValue value);
