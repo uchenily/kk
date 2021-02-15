@@ -5,19 +5,23 @@
 #include "value.h"
 
 typedef enum {
+    OP_CONSTANT,
     OP_RETURN,
 } OpCode;
 
 typedef uint8_t byte_t;
 
 typedef struct {
-    byte_t * codes;
-    int      count;
-    int      capacity;
+    byte_t *     codes;
+    int          count;
+    int          capacity;
+    KkValueArray constants;
 } Chunk;
 
 void initChunk(Chunk * chunk);
 void writeChunk(Chunk * chunk, byte_t byte);
 void resetChunk(Chunk * chunk);
+
+void addConstant(Chunk * chunk, KkValue value);
 
 #endif /* KK_CHUNK_H */

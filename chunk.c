@@ -5,6 +5,7 @@ void initChunk(Chunk * chunk) {
     chunk->count = 0;
     chunk->capacity = 0;
     chunk->codes = NULL;
+    initValueArray(&chunk->constants);
 }
 
 void writeChunk(Chunk * chunk, byte_t byte) {
@@ -21,4 +22,8 @@ void writeChunk(Chunk * chunk, byte_t byte) {
 void resetChunk(Chunk * chunk) {
     FREE_ARRAY(byte_t, chunk->codes, chunk->capacity);
     initChunk(chunk);
+}
+
+void addConstant(Chunk * chunk, KkValue value) {
+    writeValueArray(&chunk->constants, value);
 }
