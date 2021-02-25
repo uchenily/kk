@@ -13,6 +13,10 @@
 #define FREE_ARRAY(type, pointer, oldCount) \
     reallocate(pointer, sizeof(type) * (oldCount), 0)
 
+// TODO: remove oldSize
 void * reallocate(void * pointer, size_t oldSize, size_t newSize);
+
+#define ALLOC(type, count) \
+    (type *)malloc(count)
 
 #endif /* KK_MOMORY_H */

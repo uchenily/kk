@@ -9,6 +9,7 @@ void disassembleChunk(Chunk * chunk, const char * name) {
     for(int offset = 0; offset < chunk->count; ) {
         offset = disassembleInstruction(chunk, offset);
     }
+    printf("-------------------------\n");
 }
 
 int disassembleInstruction(Chunk * chunk, int offset) {
@@ -21,20 +22,51 @@ int disassembleInstruction(Chunk * chunk, int offset) {
     }
 
     byte_t instruction = chunk->codes[offset];
-    byte_t code;
     switch(instruction) {
-        case OP_CONSTANT:
-            code = chunk->codes[offset + 1]; // get index of constants pool
-            code = chunk->constants.values[code]; // get constant value
+        case OP_CONSTANT: {
+            byte_t index = chunk->codes[offset + 1]; // get index of constants pool
+            byte_t constant = chunk->constants.values[index]; // get constant value
             printf("%-16s", "OP_CONSTANT");
-            printValue(code);
+            printValue(constant);
             printf("\n");
             return offset + 2;
-        case OP_RETURN:
+        }
+        case OP_NEGATE: {
+            printf("OP_NEGATE\n");
+            return offset + 1;
+        }
+        case OP_ADD: {
+            printf("OP_ADD\n");
+            return offset + 1;
+        }
+        case OP_SUBSTRACT: {
+            printf("OP_SUBSTRACT\n");
+            return offset + 1;
+        }
+        case OP_MULTIPLY: {
+            printf("OP_MULTIPLY\n");
+            return offset + 1;
+        }
+        case OP_DIVIDE: {
+            printf("OP_DIVIDE\n");
+            return offset + 1;
+        }
+        case OP_RETURN: {
             printf("OP_RETURN\n");
             return offset + 1;
-        default:
+        }
+        default: {
             printf("Unknown opcode: 0x%02x\n", instruction);
             return offset + 1;
+        }
     }
+}
+
+void printStack(VM * vm) {
+    for(KkValue * slot = vm->stack; slot < vm->stackTop; slot++) {
+        printf("[ ");
+        printValue(*slot);
+        printf(" ]");
+    }
+    printf("\n");
 }
