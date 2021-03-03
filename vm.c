@@ -3,6 +3,7 @@
 #include "memory.h"
 #include "value.h"
 #include "debug.h"
+#include "compiler.h"
 
 void resetStack(VM * vm) {
     vm->stackTop = vm->stack;
@@ -18,6 +19,7 @@ VM * initVM() {
     return vm;
 }
 
+// TODO
 void resetVM(VM * vm) {
 
 }
@@ -33,7 +35,7 @@ KkValue pop(VM * vm) {
     return value;
 }
 
-static KkValue run(VM * vm) {
+KkValue run(VM * vm) {
 /* those macro definitions are only used inside run(), to make that scoping
  * more explicit */
 #define READ_BYTE() (*vm->pc++) /* ereference and then increment */
@@ -95,11 +97,9 @@ static KkValue run(VM * vm) {
 #undef BINARY_OP
 }
 
-KkValue interpret(VM * vm, Chunk * chunk) {
-    vm->chunk = chunk;
-    vm->pc = vm->chunk->codes;
-    KkValue result = run(vm);
-    return result;
+KkValue interpret(VM * vm, const char * source) {
+    compile(source);
+    return KK_OK;
 }
 
 

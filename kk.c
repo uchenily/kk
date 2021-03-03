@@ -3,47 +3,66 @@
 #include "debug.h"
 #include "value.h"
 #include "vm.h"
+#include "memory.h"
+#include "string.h"
+
+void repl(VM * vm) {
+    char line[1024];
+    for(;;) {
+        printf("> ");
+
+        if(!fgets(line, sizeof(line), stdin)) {
+            printf("\n");
+            break;
+        }
+
+        interpret(vm, line);
+    }
+}
+
+char * readFile(const char * path) {
+    FILE * file = fopen(path, "rb");
+    if(file == NULL) {
+        fprintf(stderr, "Could not open file \"%s\".\n", path);
+        exit(74);
+    }
+
+    fseek(file, 0L, SEEK_END);
+    size_t fileSize = ftell(file);
+    rewind(file);
+
+    char * buffer = ALLOC(char, fileSize + 1);
+    size_t bytesRead = fread(buffer, sizeof(char), fileSize, file);
+    if(bytesRead < fileSize) {
+        fprintf(stderr, "Could not read file \"%s\".\n", path);
+        exit(74);
+    }
+    buffer[bytesRead] = '\0';
+
+    fclose(file);
+    return buffer;
+}
+
+void runFile(VM * vm, const char * path) {
+    char * source = readFile(path);
+    KkValue result = interpret(vm, source);
+    free(source);
+
+    if(result == KK_COMPILE_ERROR) exit(65);
+    if(result == KK_RUNTIME_ERROR) exit(70);
+}
 
 int main(int argc, const char * argv[]) {
     VM * vm = initVM();
-    /* OP_CONSTANT */
-    writeChunk(vm->chunk, OP_CONSTANT, 1);
-    addConstant(vm->chunk, 1);
-    writeChunk(vm->chunk, vm->chunk->constants.count - 1, 1); // write index of constants pool
-    writeChunk(vm->chunk, OP_CONSTANT, 1);
-    addConstant(vm->chunk, 100);
-    writeChunk(vm->chunk, vm->chunk->constants.count - 1, 1);
-    writeChunk(vm->chunk, OP_CONSTANT, 3);
-    addConstant(vm->chunk, 1000); // overflow
-    writeChunk(vm->chunk, vm->chunk->constants.count - 1, 3);
-    /* OP_NEGATE */
-    writeChunk(vm->chunk, OP_NEGATE, 4);
-    /* OP_ADD / OP_SUBSTRACT / OP_MULTIPY / OP_DIVIDE */
-    addConstant(vm->chunk, 66);
-    writeChunk(vm->chunk, OP_CONSTANT, 5);
-    writeChunk(vm->chunk, vm->chunk->constants.count -1, 5);
+    if(argc == 1) {
+        repl(vm);
+    } else if(argc == 2) {
+        runFile(vm, argv[1]);
+    } else {
+        fprintf(stderr, "Usage: kk [path]\n");
+        exit(64);
+    }
 
-    addConstant(vm->chunk, 600);
-    writeChunk(vm->chunk, OP_CONSTANT, 5);
-    writeChunk(vm->chunk, vm->chunk->constants.count -1, 5);
-
-    writeChunk(vm->chunk, OP_ADD, 5);
-
-    addConstant(vm->chunk, 222);
-    writeChunk(vm->chunk, OP_CONSTANT, 6);
-    writeChunk(vm->chunk, vm->chunk->constants.count -1, 6);
-
-    writeChunk(vm->chunk, OP_DIVIDE, 6);
-    /* OP_RETURN */
-    writeChunk(vm->chunk, OP_RETURN, 999);
-
-    /* debug */
-    disassembleChunk(vm->chunk, "test chunk");
-
-    /* execute */
-    interpret(vm, vm->chunk);
-
-    resetChunk(vm->chunk);
     resetVM(vm);
     return 0;
 }

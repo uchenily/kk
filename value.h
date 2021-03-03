@@ -6,6 +6,12 @@
 // temporary definition
 typedef int KkValue;
 
+typedef enum {
+    KK_COMPILE_ERROR,
+    KK_RUNTIME_ERROR,
+    KK_OK,
+} InterpretResult;
+
 typedef struct {
     int count;
     int capacity;

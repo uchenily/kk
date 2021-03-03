@@ -17,7 +17,7 @@ typedef struct {
 VM * initVM();
 void resetVM(VM * vm);
 
-KkValue interpret(VM * vm, Chunk * chunk);
+KkValue interpret(VM * vm, const char * source);
 
 void push(VM * vm, KkValue value);
 KkValue pop(VM * vm);
