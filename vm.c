@@ -10,8 +10,6 @@ void resetStack(VM * vm) {
 }
 
 VM * initVM() {
-    // VM * vm = (VM *)malloc(sizeof(VM) + sizeof(KkValue) * STACK_MAX);
-    // vm->chunk = (Chunk *)malloc(sizeof(Chunk));
     VM * vm = ALLOC(VM, sizeof(VM) + sizeof(KkValue) * STACK_MAX);
     vm->chunk = ALLOC(Chunk, sizeof(Chunk));
     initChunk(vm->chunk);
@@ -98,8 +96,15 @@ KkValue run(VM * vm) {
 }
 
 KkValue interpret(VM * vm, const char * source) {
-    compile(source);
-    return KK_OK;
+    // initialize vm->chunk each time we run the interpretor.
+    initChunk(vm->chunk);
+
+    if(!compile(source, vm->chunk)) {
+        return KK_COMPILE_ERROR;
+    }
+
+    vm->pc = vm->chunk->codes;
+
+    KkValue result = run(vm);
+    return result;
 }
-
-

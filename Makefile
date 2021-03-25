@@ -9,3 +9,6 @@ kk: ${OBJS}
 .PHONY: clean
 clean:
 	@rm -f ${OBJS} ${TARGET}
+
+tags: $(wildcard *.c) $(wildcard *.h)
+	@ctags --c-kinds=+lx *.c *.h

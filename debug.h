@@ -12,4 +12,6 @@ void printStack(VM * vm);
 
 const char * tokenType(TokenType type);
 
+void printTokens(const char * source);
+
 #endif /* KK_DEBUG_H */

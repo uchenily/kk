@@ -1,5 +1,6 @@
 #include "debug.h"
 #include "chunk.h"
+#include "scanner.h"
 
 void disassembleChunk(Chunk * chunk, const char * name) {
     printf("=== %s ===\n", name);
@@ -109,4 +110,19 @@ const char * tokenType(TokenType type) {
         case TOKEN_ERROR:               return "TOKEN_ERROR";
         case TOKEN_EOF:                 return "TOKEN_EOF";
     }
+}
+
+void printTokens(const char * source) {
+    // we need reinitialize scanner after debugging
+    initScanner(source);
+    printf("%4s %-20s %s\n", "LINE", "TYPE", "VALUE");
+    printf("-------------------------------\n");
+    for(;;) {
+        Token token = scanToken();
+
+        printf("%4d %-20s %.*s\n", token.line, tokenType(token.type),
+                token.length, token.start);
+        if(token.type == TOKEN_EOF) break;
+    }
+    printf("-------------------------------\n");
 }

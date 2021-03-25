@@ -28,6 +28,6 @@ void initChunk(Chunk * chunk);
 void writeChunk(Chunk * chunk, byte_t byte, int line);
 void resetChunk(Chunk * chunk);
 
-void addConstant(Chunk * chunk, KkValue value);
+int addConstant(Chunk * chunk, KkValue value);
 
 #endif /* KK_CHUNK_H */

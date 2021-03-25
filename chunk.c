@@ -25,9 +25,11 @@ void writeChunk(Chunk * chunk, byte_t byte, int line) {
 void resetChunk(Chunk * chunk) {
     FREE_ARRAY(byte_t, chunk->codes, chunk->capacity);
     FREE_ARRAY(int, chunk->lines, chunk->capacity);
+    resetValueArray(&chunk->constants);
     initChunk(chunk);
 }
 
-void addConstant(Chunk * chunk, KkValue value) {
+int addConstant(Chunk * chunk, KkValue value) {
     writeValueArray(&chunk->constants, value);
+    return chunk->constants.count - 1;
 }
