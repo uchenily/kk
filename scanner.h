@@ -7,6 +7,9 @@ typedef struct {
     int          line;
 } Scanner;
 
+// declare external variable, not define it
+extern Scanner scanner;
+
 typedef enum {
     /* single-character tokens */
     TOKEN_LEFT_PAREN,       // (
@@ -62,7 +65,7 @@ typedef struct {
     int          line;
 } Token;
 
-void initScanner(Scanner * scanner, const char * source);
-Token scanToken(Scanner * scanner);
+void initScanner(const char * source);
+Token scanToken();
 
 #endif /* KK_SCANNER_H */
