@@ -28,6 +28,7 @@ void printValue(KkValue value) {
         case VAL_BOOL:      printf(AS_BOOL(value) ? "true" : "false"); break;
         case VAL_NIL:       printf("nil"); break;
         case VAL_NUMBER:    printf("<num%04x>", (u_int16_t)AS_NUMBER(value)); break;
+        case VAL_OBJECT:    printObject(AS_OBJECT(value)); break;
     }
 }
 
@@ -38,8 +39,25 @@ bool isEqual(KkValue a, KkValue b) {
         case VAL_BOOL:   return AS_BOOL(a) == AS_BOOL(b);
         case VAL_NIL:    return true;
         case VAL_NUMBER: return AS_NUMBER(a) == AS_NUMBER(b);
+        case VAL_OBJECT: {
+            Object * aObject = AS_OBJECT(a);
+            Object * bObject = AS_OBJECT(b);
+            if(aObject->type != bObject->type) return false;
+
+            switch(aObject->type) {
+                case OBJ_STRING: {
+                    ObjString * aString = AS_STRING(a);
+                    ObjString * bString = AS_STRING(b);
+                    return aString->length = bString->length &&
+                        memcmp(aString->chars, bString->chars,aString->length) == 0;
+                }
+            }
+        }
         default:
             return false; // unreachable.
     }
 }
 
+inline bool isObjType(KkValue value, ObjType type) {
+    return IS_OBJECT(value) && AS_OBJECT(value)->type == type;
+}

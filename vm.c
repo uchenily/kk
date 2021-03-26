@@ -27,13 +27,14 @@ VM * initVM() {
     VM * vm = ALLOC(VM, sizeof(VM) + sizeof(KkValue) * STACK_MAX);
     vm->chunk = ALLOC(Chunk, sizeof(Chunk));
     initChunk(vm->chunk);
+    // objects is a global variable declare in object.h
+    vm->objects = objects;
     resetStack(vm);
     return vm;
 }
 
-// TODO
 void resetVM(VM * vm) {
-
+    freeObjects(vm->objects);
 }
 
 void push(VM * vm, KkValue value) {
@@ -57,6 +58,18 @@ KkValue add(KkValue a, KkValue b)       {return NUMBER(a.number + b.number);}
 KkValue substract(KkValue a, KkValue b) {return NUMBER(a.number - b.number);}
 KkValue multiply(KkValue a, KkValue b)  {return NUMBER(a.number * b.number);}
 KkValue divide(KkValue a, KkValue b)    {return NUMBER(a.number / b.number);}
+KkValue str_add(KkValue a, KkValue b)   {
+    ObjString * aObj = AS_STRING(a);
+    ObjString * bObj = AS_STRING(b);
+    int length = aObj->length + bObj->length;
+    char * chars = ALLOC(char, length + 1);
+    memcpy(chars, aObj->chars, aObj->length);
+    memcpy(chars + aObj->length, bObj->chars, bObj->length);
+    chars[length] = '\0';
+
+    ObjString * result = createString(chars, length);
+    return OBJECT(result);
+}
 
 InterpretResult run(VM * vm) {
 /* those macro definitions are only used inside run(), to make that scoping
@@ -67,7 +80,18 @@ InterpretResult run(VM * vm) {
 #define BINARY_OP(vm, op) \
     do { \
         if(!IS_NUMBER(peek(vm, 0)) || !IS_NUMBER(peek(vm, 1))) { \
-            runtimeError(vm, "Operands must be numbers."); \
+            runtimeError(vm, "Operands must be two numbers."); \
+            return KK_RUNTIME_ERROR; \
+        } \
+        KkValue b = pop(vm); \
+        KkValue a = pop(vm); \
+        push(vm, op(a, b)); \
+    } while(0);
+
+#define BINARY_OP_STRING(vm, op) \
+    do { \
+        if(!IS_STRING(peek(vm, 0)) || !IS_STRING(peek(vm, 1))) { \
+            runtimeError(vm, "Operands must be two strings."); \
             return KK_RUNTIME_ERROR; \
         } \
         KkValue b = pop(vm); \
@@ -117,7 +141,12 @@ InterpretResult run(VM * vm) {
                 break;
             }
             case OP_ADD: {
-                BINARY_OP(vm, add);
+                // peek(1) maybe better than peek(0) because of reading habits
+                if(IS_STRING(peek(vm, 1))) {
+                    BINARY_OP_STRING(vm, str_add);
+                } else if(IS_NUMBER(peek(vm, 1))) {
+                    BINARY_OP(vm, add);
+                }
                 break;
             }
             case OP_SUBSTRACT: {

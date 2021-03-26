@@ -8,6 +8,7 @@
 typedef struct {
     Chunk *   chunk;
     byte_t *  pc; /* program counter */
+    Object *  objects;
     KkValue * stackTop;
     // Flexible Array Member(FAM)
     // variable length array must be last member of structure

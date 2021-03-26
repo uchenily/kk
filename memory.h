@@ -17,6 +17,8 @@
 void * reallocate(void * pointer, size_t oldSize, size_t newSize);
 
 #define ALLOC(type, count) \
-    (type *)malloc(count)
+    (type *)reallocate(NULL, 0, count)
+
+#define FREE(type, pointer) reallocate(pointer, sizeof(type), 0)
 
 #endif /* KK_MOMORY_H */
