@@ -78,11 +78,17 @@ static TokenType identifierType() {
         case 'c': return checkKeyword(5, "class",  TOKEN_CLASS);
         case 'd': return checkKeyword(3, "def",    TOKEN_DEF);
         case 'e': return checkKeyword(4, "else",   TOKEN_ELSE);
-        case 'f': return checkKeyword(3, "for",    TOKEN_FOR);
+        case 'f':
+            switch(*(scanner.start + 1)) {
+                case 'o': return checkKeyword(3, "for",   TOKEN_FOR);
+                case 'a': return checkKeyword(5, "false", TOKEN_FALSE);
+            }
         case 'i': return checkKeyword(2, "if",     TOKEN_IF);
+        case 'n': return checkKeyword(3, "nil",    TOKEN_NIL);
         case 'o': return checkKeyword(2, "or",     TOKEN_OR);
         case 'r': return checkKeyword(6, "return", TOKEN_RETURN);
         case 's': return checkKeyword(4, "self",   TOKEN_SELF);
+        case 't': return checkKeyword(4, "true",   TOKEN_TRUE);
         case 'v': return checkKeyword(3, "var",    TOKEN_VAR);
         case 'w': return checkKeyword(5, "while",  TOKEN_WHILE);
     }

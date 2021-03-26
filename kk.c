@@ -45,7 +45,7 @@ char * readFile(const char * path) {
 
 void runFile(VM * vm, const char * path) {
     char * source = readFile(path);
-    KkValue result = interpret(vm, source);
+    InterpretResult result = interpret(vm, source);
     free(source);
 
     if(result == KK_COMPILE_ERROR) exit(65);

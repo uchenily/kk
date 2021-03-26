@@ -7,6 +7,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <stdarg.h>
 
 #define DEBUG_PRINT_TOKEN
 #define DEBUG_PRINT_BYTE_CODE

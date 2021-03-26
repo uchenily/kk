@@ -38,6 +38,9 @@ typedef enum {
     TOKEN_IDENTIFIER,
     TOKEN_STRING,
     TOKEN_NUMBER,
+    TOKEN_FALSE,
+    TOKEN_TRUE,
+    TOKEN_NIL,
 
     /* keywords */
     TOKEN_AND,              // and

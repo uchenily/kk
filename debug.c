@@ -26,11 +26,35 @@ int disassembleInstruction(Chunk * chunk, int offset) {
     switch(instruction) {
         case OP_CONSTANT: {
             byte_t index = chunk->codes[offset + 1]; // get index of constants pool
-            byte_t constant = chunk->constants.values[index]; // get constant value
+            KkValue constant = chunk->constants.values[index]; // get constant value
             printf("%-16s", "OP_CONSTANT");
             printValue(constant);
             printf("\n");
             return offset + 2;
+        }
+        case OP_FALSE: {
+            printf("OP_FALSE\n");
+            return offset + 1;
+        }
+        case OP_TRUE: {
+            printf("OP_TRUE\n");
+            return offset + 1;
+        }
+        case OP_NIL: {
+            printf("OP_NIL\n");
+            return offset + 1;
+        }
+        case OP_EQUAL: {
+            printf("OP_EQUAL\n");
+            return offset + 1;
+        }
+        case OP_GREATER: {
+            printf("OP_GREATER\n");
+            return offset + 1;
+        }
+        case OP_LESS: {
+            printf("OP_LESS\n");
+            return offset + 1;
         }
         case OP_NEGATE: {
             printf("OP_NEGATE\n");
@@ -50,6 +74,10 @@ int disassembleInstruction(Chunk * chunk, int offset) {
         }
         case OP_DIVIDE: {
             printf("OP_DIVIDE\n");
+            return offset + 1;
+        }
+        case OP_NOT: {
+            printf("OP_NOT\n");
             return offset + 1;
         }
         case OP_RETURN: {
@@ -89,12 +117,15 @@ const char * tokenType(TokenType type) {
         case TOKEN_BANG_EQUAL:          return "TOKEN_BANG_EQUAL";
         case TOKEN_EQUAL:               return "TOKEN_EQUAL";
         case TOKEN_EQUAL_EQUAL:         return "TOKEN_EQUAL_EQUAL";
+        case TOKEN_FALSE:               return "TOKEN_FALSE";
         case TOKEN_GREATER:             return "TOKEN_GREATER";
         case TOKEN_GREATER_EQUAL:       return "TOKEN_GREATER_EQUAL";
         case TOKEN_LESS:                return "TOKEN_LESS";
         case TOKEN_LESS_EQUAL:          return "TOKEN_LESS_EQUAL";
         case TOKEN_IDENTIFIER:          return "TOKEN_IDENTIFIER";
+        case TOKEN_NIL:                 return "TOKEN_NIL";
         case TOKEN_STRING:              return "TOKEN_STRING";
+        case TOKEN_TRUE:                return "TOKEN_TRUE";
         case TOKEN_NUMBER:              return "TOKEN_NUMBER";
         case TOKEN_AND:                 return "TOKEN_AND";
         case TOKEN_CLASS:               return "TOKEN_CLASS";
