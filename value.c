@@ -33,8 +33,6 @@ void printValue(KkValue value) {
 }
 
 bool isEqual(KkValue a, KkValue b) {
-    if(a.type != b.type) return false;
-
     switch(a.type) {
         case VAL_BOOL:   return AS_BOOL(a) == AS_BOOL(b);
         case VAL_NIL:    return true;

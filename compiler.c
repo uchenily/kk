@@ -152,7 +152,7 @@ static void binary() {
 
     // compile the right operand.
     ParseRule * rule = getRule(operatorType);
-    parsePrecedence((Precedence)(rule->precedence + 1));
+    parsePrecedence(rule->precedence + 1);
 
     // emit the operator instruction.
     switch(operatorType) {

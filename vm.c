@@ -169,7 +169,12 @@ InterpretResult run(VM * vm) {
             case OP_EQUAL: {
                 KkValue b = pop(vm);
                 KkValue a = pop(vm);
+                if(a.type != b.type) {
+                    runtimeError(vm, "Values of different types should not be compared.");
+                    return KK_RUNTIME_ERROR;
+                }
                 push(vm, isEqual(a, b) ? BOOL(true) : BOOL(false));
+                break;
             }
             case OP_RETURN: {
                 printf("return ");
