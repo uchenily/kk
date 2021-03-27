@@ -123,8 +123,18 @@ static void expression() {
 }
 
 static void number() {
-    int value = atoi(parser.previous.start);
-    emitConstant(NUMBER(value));
+    // TODO: support prefix `0x`(base=16) `0`(base=8) `0b`(base=2)
+    int base = 10;
+    const char * start = parser.previous.start;
+    for(int i = 0; i < parser.previous.length; i++) {
+        if(start[i] == '.') {
+            double value = strtod(start, NULL);
+            emitConstant(FLOAT(value));
+            return;
+        }
+    }
+    int value = strtol(start, NULL, base);
+    emitConstant(INTEGER(value));
 }
 
 static void grouping() {

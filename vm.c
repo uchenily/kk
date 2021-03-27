@@ -52,13 +52,45 @@ KkValue peek(VM * vm, int distance) {
     return vm->stackTop[-1 - distance];
 }
 
-KkValue greater(KkValue a, KkValue b)   {return BOOL(a.number > b.number);}
-KkValue less(KkValue a, KkValue b)      {return BOOL(a.number < b.number);}
-KkValue add(KkValue a, KkValue b)       {return NUMBER(a.number + b.number);}
-KkValue substract(KkValue a, KkValue b) {return NUMBER(a.number - b.number);}
-KkValue multiply(KkValue a, KkValue b)  {return NUMBER(a.number * b.number);}
-KkValue divide(KkValue a, KkValue b)    {return NUMBER(a.number / b.number);}
-KkValue str_add(KkValue a, KkValue b)   {
+/* NOTE:
+ * 1. handle the input exception in the BINARY_OP/BINARY_OP_STRING macro
+ * 2. use api such as IS_INTEGER(a) rather than a.integer(internal implementation)
+ */
+#define MAKE_COMPARATOR(name, operator) \
+    static KkValue name(KkValue a, KkValue b) { \
+        if(IS_INTEGER(a) && IS_INTEGER(b)) { \
+            return BOOL(AS_INTEGER(a) operator AS_INTEGER(b)); \
+        } else if(IS_INTEGER(a) && IS_FLOAT(b)) { \
+            return BOOL(AS_INTEGER(a) operator AS_FLOAT(b)); \
+        } else if(IS_FLOAT(a) && IS_INTEGER(b)){ \
+            return BOOL(AS_FLOAT(a) operator AS_INTEGER(b)); \
+        } else { \
+            return BOOL(AS_FLOAT(a) operator AS_FLOAT(b)); \
+        } \
+    }
+
+MAKE_COMPARATOR(greater, >)
+MAKE_COMPARATOR(less, <)
+
+#define MAKE_BINARY_OPERATER(name, operator) \
+    KkValue name(KkValue a, KkValue b) { \
+        if(IS_INTEGER(a) && IS_INTEGER(b)) { \
+            return INTEGER(AS_INTEGER(a) operator AS_INTEGER(b)); \
+        } else if(IS_INTEGER(a) && IS_FLOAT(b)) { \
+            return FLOAT((double)AS_INTEGER(a) operator AS_FLOAT(b)); \
+        } else if(IS_FLOAT(a) && IS_INTEGER(b)) { \
+            return FLOAT(AS_FLOAT(a) operator (double)AS_INTEGER(b)); \
+        } else { \
+            return FLOAT(AS_FLOAT(a) operator AS_FLOAT(b)); \
+        } \
+    }
+
+MAKE_BINARY_OPERATER(add, +)
+MAKE_BINARY_OPERATER(substract, -)
+MAKE_BINARY_OPERATER(multiply, *)
+MAKE_BINARY_OPERATER(divide, /)
+
+KkValue str_add(KkValue a, KkValue b) {
     ObjString * aObj = AS_STRING(a);
     ObjString * bObj = AS_STRING(b);
     int length = aObj->length + bObj->length;
@@ -75,7 +107,7 @@ InterpretResult run(VM * vm) {
 /* those macro definitions are only used inside run(), to make that scoping
  * more explicit */
 #define READ_BYTE() (*vm->pc++) /* dereference and then increment */
-#define READ_CONSTANT() (vm->chunk->constants.values[READ_BYTE()])
+#define READ_CONSTANT(index) (vm->chunk->constants.values[index])
 
 #define BINARY_OP(vm, op) \
     do { \
@@ -108,7 +140,8 @@ InterpretResult run(VM * vm) {
         byte_t instruction = READ_BYTE();
         switch(instruction) {
             case OP_CONSTANT: {
-                KkValue constant = READ_CONSTANT();
+                int index = READ_BYTE();
+                KkValue constant = READ_CONSTANT(index);
                 push(vm, constant);
                 break;
             }
@@ -133,11 +166,13 @@ InterpretResult run(VM * vm) {
                 break;
             }
             case OP_NEGATE: {
-                if(!IS_NUMBER(peek(vm, 0))) {
+                KkValue value = peek(vm, 0);
+                if(!IS_NUMBER(value)) {
                     runtimeError(vm, "Operand must be a number.");
                     return KK_RUNTIME_ERROR;
                 }
-                push(vm, NUMBER(-AS_NUMBER(pop(vm))));
+                if(IS_INTEGER(value)) push(vm, INTEGER(-AS_INTEGER(pop(vm))));
+                if(IS_FLOAT(value)) push(vm, FLOAT(-AS_FLOAT(pop(vm))));
                 break;
             }
             case OP_ADD: {
@@ -194,15 +229,18 @@ InterpretResult run(VM * vm) {
 }
 
 InterpretResult interpret(VM * vm, const char * source) {
-    // initialize vm->chunk each time we run the interpretor.
+    // initialize vm->chunk each time we run the interpreter.
     initChunk(vm->chunk);
 
     if(!compile(source, vm->chunk)) {
+        resetChunk(vm->chunk);
         return KK_COMPILE_ERROR;
     }
 
     vm->pc = vm->chunk->codes;
 
     InterpretResult result = run(vm);
+    // free vm->chunk after interpreter executed.
+    resetChunk(vm->chunk);
     return result;
 }

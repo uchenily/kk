@@ -27,16 +27,18 @@ void printValue(KkValue value) {
     switch(value.type) {
         case VAL_BOOL:      printf(AS_BOOL(value) ? "true" : "false"); break;
         case VAL_NIL:       printf("nil"); break;
-        case VAL_NUMBER:    printf("<num%04x>", (u_int16_t)AS_NUMBER(value)); break;
+        case VAL_INTEGER:   printf("integer(%ld)", AS_INTEGER(value)); break;
+        case VAL_FLOAT:     printf("float(%.02lf)", AS_FLOAT(value)); break;
         case VAL_OBJECT:    printObject(AS_OBJECT(value)); break;
     }
 }
 
 bool isEqual(KkValue a, KkValue b) {
     switch(a.type) {
-        case VAL_BOOL:   return AS_BOOL(a) == AS_BOOL(b);
-        case VAL_NIL:    return true;
-        case VAL_NUMBER: return AS_NUMBER(a) == AS_NUMBER(b);
+        case VAL_BOOL:      return AS_BOOL(a) == AS_BOOL(b);
+        case VAL_NIL:       return true;
+        case VAL_INTEGER:   return AS_INTEGER(a) == AS_INTEGER(b);
+        case VAL_FLOAT:     return AS_FLOAT(a) == AS_FLOAT(b);
         case VAL_OBJECT: {
             Object * aObject = AS_OBJECT(a);
             Object * bObject = AS_OBJECT(b);

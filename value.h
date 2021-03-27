@@ -7,7 +7,8 @@
 typedef enum {
     VAL_BOOL,
     VAL_NIL,
-    VAL_NUMBER,
+    VAL_INTEGER,
+    VAL_FLOAT,
     VAL_OBJECT,
 } KkValueType;
 
@@ -18,16 +19,20 @@ typedef enum {
  * | type  |padding|     union     |
  * ---------------------------------
  *                 | | <- boolean
- *                 |               | <- number
+ *                 |               | <- floating/integer(8-byte)
+ *                 |       | <- object(only `type` field)
  *
  * NOTE: most architectures prefer values be aligned to their size,
  * the union field contains a 8-byte double, so there is a padding.
+ *
+ * NOTE: the model has been changed since object defination has been modified.
  */
 typedef struct {
     KkValueType type;
     union {
         bool     boolean;
-        double   number;
+        double   floating;
+        int64_t  integer;
         Object * object;
     };
 } KkValue;
@@ -36,24 +41,31 @@ typedef struct {
 bool isObjType(KkValue value, ObjType type);
 
 #define AS_BOOL(k_value)      ((k_value).boolean)
-#define AS_NUMBER(k_value)    ((k_value).number)
+#define AS_FLOAT(k_value)     ((k_value).floating)
+#define AS_INTEGER(k_value)   ((k_value).integer)
 #define AS_OBJECT(k_value)    ((k_value).object)
 #define AS_STRING(k_value)    ((ObjString *)AS_OBJECT(k_value))
 
 #define BOOL(c_value)         ((KkValue){VAL_BOOL, {.boolean = c_value}})
-#define NIL                   ((KkValue){VAL_NIL, {.number = 0}})
-#define NUMBER(c_value)       ((KkValue){VAL_NUMBER, {.number = c_value}})
+#define NIL                   ((KkValue){VAL_NIL, {.integer = 0}})
+#define FLOAT(c_value)        ((KkValue){VAL_FLOAT, {.floating = c_value}})
+#define INTEGER(c_value)      ((KkValue){VAL_INTEGER, {.integer = c_value}})
 // c_object contains `object` field, such as instance of struct ObjString
 // use argument name `object` will intruduce a naming conflict here
 #define OBJECT(c_object)      ((KkValue){VAL_OBJECT, {.object = (Object *)c_object}})
 
 #define IS_BOOL(k_value)      ((k_value).type == VAL_BOOL)
 #define IS_NIL(k_value)       ((k_value).type == VAL_NIL)
-#define IS_NUMBER(k_value)    ((k_value).type == VAL_NUMBER)
+#define IS_FLOAT(k_value)     ((k_value).type == VAL_FLOAT)
+#define IS_INTEGER(k_value)   ((k_value).type == VAL_INTEGER)
+#define IS_NUMBER(k_value)    ((k_value).type == VAL_INTEGER || (k_value).type == VAL_FLOAT)
 #define IS_OBJECT(k_value)    ((k_value).type == VAL_OBJECT)
 #define IS_STRING(k_value)    isObjType(k_value, OBJ_STRING)
 
-#define IS_ZERO(k_value)      ((k_value).number == 0)
+// only consider boolean/integer/nil at this state
+#define IS_ZERO(k_value)      (IS_NIL(k_value) || \
+                               IS_BOOL(k_value) && !AS_BOOL(k_value) || \
+                               IS_INTEGER(k_value) && !AS_INTEGER(k_value))
 
 
 bool isEqual(KkValue a, KkValue b);

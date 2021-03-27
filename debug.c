@@ -6,12 +6,13 @@ void disassembleChunk(Chunk * chunk, const char * name) {
     printf("=== %s ===\n", name);
     printf("Offset  LineNo  OpCode(s)\n");
     printf("-------------------------\n");
-
     for(int offset = 0; offset < chunk->count; ) {
         offset = disassembleInstruction(chunk, offset);
     }
     printf("-------------------------\n");
 }
+
+#define CASE(opcode) case opcode: {printf("%s\n", #opcode); return offset + 1;}
 
 int disassembleInstruction(Chunk * chunk, int offset) {
     printf("%04d     ", offset);
@@ -32,58 +33,19 @@ int disassembleInstruction(Chunk * chunk, int offset) {
             printf("\n");
             return offset + 2;
         }
-        case OP_FALSE: {
-            printf("OP_FALSE\n");
-            return offset + 1;
-        }
-        case OP_TRUE: {
-            printf("OP_TRUE\n");
-            return offset + 1;
-        }
-        case OP_NIL: {
-            printf("OP_NIL\n");
-            return offset + 1;
-        }
-        case OP_EQUAL: {
-            printf("OP_EQUAL\n");
-            return offset + 1;
-        }
-        case OP_GREATER: {
-            printf("OP_GREATER\n");
-            return offset + 1;
-        }
-        case OP_LESS: {
-            printf("OP_LESS\n");
-            return offset + 1;
-        }
-        case OP_NEGATE: {
-            printf("OP_NEGATE\n");
-            return offset + 1;
-        }
-        case OP_ADD: {
-            printf("OP_ADD\n");
-            return offset + 1;
-        }
-        case OP_SUBSTRACT: {
-            printf("OP_SUBSTRACT\n");
-            return offset + 1;
-        }
-        case OP_MULTIPLY: {
-            printf("OP_MULTIPLY\n");
-            return offset + 1;
-        }
-        case OP_DIVIDE: {
-            printf("OP_DIVIDE\n");
-            return offset + 1;
-        }
-        case OP_NOT: {
-            printf("OP_NOT\n");
-            return offset + 1;
-        }
-        case OP_RETURN: {
-            printf("OP_RETURN\n");
-            return offset + 1;
-        }
+        CASE(OP_FALSE)
+        CASE(OP_TRUE)
+        CASE(OP_NIL)
+        CASE(OP_EQUAL)
+        CASE(OP_GREATER)
+        CASE(OP_LESS)
+        CASE(OP_NEGATE)
+        CASE(OP_ADD)
+        CASE(OP_SUBSTRACT)
+        CASE(OP_MULTIPLY)
+        CASE(OP_DIVIDE)
+        CASE(OP_NOT)
+        CASE(OP_RETURN)
         default: {
             printf("Unknown opcode: 0x%02x\n", instruction);
             return offset + 1;

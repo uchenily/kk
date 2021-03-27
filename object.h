@@ -12,10 +12,15 @@ typedef enum {
  * | type  |
  * | | | | | | | | | | | | | | | | | <-ObjString
  * ---------------------------------
- * |object |length |   strings[]   |
+ * |object |length |    chars[]    |
  *
  * NOTE: we can safely convert ObjString* to Object* and access `type` field,
  * becuase the first byte is aligned.
+ *
+ * add `next` field:
+ * | | | | | | | | | | | | | | | | | <-Object
+ * ---------------------------------
+ * | type  |padding|     next      |
  */
 typedef struct Object Object;
 struct Object {
