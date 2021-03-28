@@ -8,6 +8,9 @@
 typedef struct {
     Chunk *   chunk;
     byte_t *  pc; /* program counter */
+    // how to relate vm and objects without using pointers to pass around?
+    // in the meanwhile, i don't want to use a global variable vm.
+    // define like this: freeObjects(VM * vm, Object * objects) maybe an idea.
     Object *  objects;
     KkValue * stackTop;
     // Flexible Array Member(FAM)

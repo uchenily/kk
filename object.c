@@ -70,7 +70,6 @@ static void freeObject(Object * object) {
 }
 
 void freeObjects(Object * objects) {
-    Object * object = objects;
     for(Object * object = objects; object != NULL; object = object->next) {
         freeObject(object);
     }

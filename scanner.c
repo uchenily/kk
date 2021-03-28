@@ -61,7 +61,7 @@ static bool isDigit(char ch) {
 
 static bool isAlpha(char ch) {
     if(ch == '_') return true;
-    return ch >= 'a' && ch <= 'z' || ch >= 'A' && ch <= 'Z';
+    return (ch >= 'a' && ch <= 'z') || (ch >= 'A' && ch <= 'Z');
 }
 
 static TokenType checkKeyword(int length, const char * keyword,
@@ -82,6 +82,7 @@ static TokenType identifierType() {
             switch(*(scanner.start + 1)) {
                 case 'o': return checkKeyword(3, "for",   TOKEN_FOR);
                 case 'a': return checkKeyword(5, "false", TOKEN_FALSE);
+                default: return TOKEN_IDENTIFIER;
             }
         case 'i': return checkKeyword(2, "if",     TOKEN_IF);
         case 'n': return checkKeyword(3, "nil",    TOKEN_NIL);

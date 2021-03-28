@@ -17,7 +17,7 @@ void disassembleChunk(Chunk * chunk, const char * name) {
 int disassembleInstruction(Chunk * chunk, int offset) {
     printf("%04d     ", offset);
     if(offset == 0 ||
-            offset > 0 && chunk->lines[offset] != chunk->lines[offset - 1]) {
+      (offset >  0 && (chunk->lines[offset] != chunk->lines[offset - 1]))) {
         printf("%4dl  ", chunk->lines[offset]);
     } else {
         printf("%7s", "");
@@ -102,6 +102,7 @@ const char * tokenType(TokenType type) {
         case TOKEN_WHILE:               return "TOKEN_WHILE";
         case TOKEN_ERROR:               return "TOKEN_ERROR";
         case TOKEN_EOF:                 return "TOKEN_EOF";
+        default: return "TOKEN_UNKNOWN";
     }
 }
 

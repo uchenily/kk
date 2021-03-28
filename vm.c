@@ -34,7 +34,10 @@ VM * initVM() {
 }
 
 void resetVM(VM * vm) {
-    freeObjects(vm->objects);
+    // `objects` is not currently associated with a `vm`
+    freeObjects(objects);
+    FREE(Chunk, vm->chunk);
+    FREE(VM, vm);
 }
 
 void push(VM * vm, KkValue value) {
@@ -215,7 +218,7 @@ InterpretResult run(VM * vm) {
                 printf("return ");
                 printValue(pop(vm));
                 printf("\n");
-                return 0;
+                return KK_OK;
             }
             default: {
                 printf("Unknown opcode: 0x%02x", instruction);
@@ -226,12 +229,10 @@ InterpretResult run(VM * vm) {
 #undef READ_BYTE
 #undef READ_CONSTANT
 #undef BINARY_OP
+#undef BINARY_OP_STRING
 }
 
 InterpretResult interpret(VM * vm, const char * source) {
-    // initialize vm->chunk each time we run the interpreter.
-    initChunk(vm->chunk);
-
     if(!compile(source, vm->chunk)) {
         resetChunk(vm->chunk);
         return KK_COMPILE_ERROR;
@@ -240,7 +241,7 @@ InterpretResult interpret(VM * vm, const char * source) {
     vm->pc = vm->chunk->codes;
 
     InterpretResult result = run(vm);
-    // free vm->chunk after interpreter executed.
+    // reset vm->chunk after interpreter executed.
     resetChunk(vm->chunk);
     return result;
 }

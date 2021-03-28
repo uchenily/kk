@@ -48,9 +48,11 @@ bool isEqual(KkValue a, KkValue b) {
                 case OBJ_STRING: {
                     ObjString * aString = AS_STRING(a);
                     ObjString * bString = AS_STRING(b);
-                    return aString->length = bString->length &&
-                        memcmp(aString->chars, bString->chars,aString->length) == 0;
+                    return aString->length == bString->length &&
+                        (memcmp(aString->chars, bString->chars,aString->length) == 0);
                 }
+                default:
+                    return false;
             }
         }
         default:

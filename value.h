@@ -64,16 +64,16 @@ bool isObjType(KkValue value, ObjType type);
 
 // only consider boolean/integer/nil at this state
 #define IS_ZERO(k_value)      (IS_NIL(k_value) || \
-                               IS_BOOL(k_value) && !AS_BOOL(k_value) || \
-                               IS_INTEGER(k_value) && !AS_INTEGER(k_value))
+                              (IS_BOOL(k_value) && !AS_BOOL(k_value)) || \
+                              (IS_INTEGER(k_value) && !AS_INTEGER(k_value)))
 
 
 bool isEqual(KkValue a, KkValue b);
 
 typedef enum {
+    KK_OK,
     KK_COMPILE_ERROR,
     KK_RUNTIME_ERROR,
-    KK_OK,
 } InterpretResult;
 
 typedef struct {
