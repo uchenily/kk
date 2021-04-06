@@ -6,7 +6,7 @@
 #include "memory.h"
 #include "string.h"
 
-void repl(VM * vm) {
+void repl() {
     char line[1024];
     for(;;) {
         printf("> ");
@@ -16,7 +16,10 @@ void repl(VM * vm) {
             break;
         }
 
-        interpret(vm, line);
+        if(strlen(line) - 1 == 4 &&
+           strncmp(line, "quit", 4) == 0) break;
+
+        interpret(line);
     }
 }
 
@@ -43,9 +46,9 @@ char * readFile(const char * path) {
     return buffer;
 }
 
-void runFile(VM * vm, const char * path) {
+void runFile(const char * path) {
     char * source = readFile(path);
-    InterpretResult result = interpret(vm, source);
+    InterpretResult result = interpret(source);
     free(source);
 
     if(result == KK_COMPILE_ERROR) exit(65);
@@ -53,16 +56,16 @@ void runFile(VM * vm, const char * path) {
 }
 
 int main(int argc, const char * argv[]) {
-    VM * vm = initVM();
+    initVM();
     if(argc == 1) {
-        repl(vm);
+        repl();
     } else if(argc == 2) {
-        runFile(vm, argv[1]);
+        runFile(argv[1]);
     } else {
         fprintf(stderr, "Usage: kk [path]\n");
         exit(64);
     }
 
-    resetVM(vm);
+    resetVM();
     return 0;
 }

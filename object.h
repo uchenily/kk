@@ -28,8 +28,6 @@ struct Object {
     Object * next;
 };
 
-extern Object * objects;
-
 typedef struct {
     Object  object;
     int     length;

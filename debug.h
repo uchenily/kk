@@ -8,7 +8,7 @@
 void disassembleChunk(Chunk * chunk, const char * name);
 int disassembleInstruction(Chunk * chunk, int offset);
 
-void printStack(VM * vm);
+void printStack();
 
 const char * tokenType(TokenType type);
 

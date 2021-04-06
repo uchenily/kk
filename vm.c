@@ -5,54 +5,52 @@
 #include "debug.h"
 #include "compiler.h"
 
-void resetStack(VM * vm) {
-    vm->stackTop = vm->stack;
+// global variable
+VM vm;
+
+void resetStack() {
+    vm.stackTop = vm.stack;
 }
 
-void runtimeError(VM * vm, const char * format, ...) {
+void runtimeError(const char * format, ...) {
     va_list args;
     va_start(args, format);
     vfprintf(stderr, format, args);
     va_end(args);
     fputs("\n", stderr);
 
-    int instruction = vm->pc - vm->chunk->codes - 1;
-    int line = vm->chunk->lines[instruction];
+    int instruction = vm.pc - vm.chunk->codes - 1;
+    int line = vm.chunk->lines[instruction];
     fprintf(stderr, "[line %d] in script\n", line);
 
-    resetStack(vm);
+    resetStack();
 }
 
-VM * initVM() {
-    VM * vm = ALLOC(VM, sizeof(VM) + sizeof(KkValue) * STACK_MAX);
-    vm->chunk = ALLOC(Chunk, sizeof(Chunk));
-    initChunk(vm->chunk);
-    // objects is a global variable declare in object.h
-    vm->objects = objects;
-    resetStack(vm);
-    return vm;
+void initVM() {
+    vm.chunk = ALLOC(Chunk, sizeof(Chunk));
+    initChunk(vm.chunk);
+    vm.objects = NULL;
+    resetStack();
 }
 
-void resetVM(VM * vm) {
-    // `objects` is not currently associated with a `vm`
-    freeObjects(objects);
-    FREE(Chunk, vm->chunk);
-    FREE(VM, vm);
+void resetVM() {
+    freeObjects(vm.objects);
+    FREE(Chunk, vm.chunk);
 }
 
-void push(VM * vm, KkValue value) {
-    *vm->stackTop = value;
-    vm->stackTop++;
+void push(KkValue value) {
+    *vm.stackTop = value;
+    vm.stackTop++;
 }
 
-KkValue pop(VM * vm) {
-    vm->stackTop--;
-    KkValue value = *vm->stackTop;
+KkValue pop() {
+    vm.stackTop--;
+    KkValue value = *vm.stackTop;
     return value;
 }
 
-KkValue peek(VM * vm, int distance) {
-    return vm->stackTop[-1 - distance];
+KkValue peek(int distance) {
+    return vm.stackTop[-1 - distance];
 }
 
 /* NOTE:
@@ -106,117 +104,117 @@ KkValue str_add(KkValue a, KkValue b) {
     return OBJECT(result);
 }
 
-InterpretResult run(VM * vm) {
+InterpretResult run() {
 /* those macro definitions are only used inside run(), to make that scoping
  * more explicit */
-#define READ_BYTE() (*vm->pc++) /* dereference and then increment */
-#define READ_CONSTANT(index) (vm->chunk->constants.values[index])
+#define READ_BYTE() (*vm.pc++) /* dereference and then increment */
+#define READ_CONSTANT(index) (vm.chunk->constants.values[index])
 
-#define BINARY_OP(vm, op) \
+#define BINARY_OP(op) \
     do { \
-        if(!IS_NUMBER(peek(vm, 0)) || !IS_NUMBER(peek(vm, 1))) { \
-            runtimeError(vm, "Operands must be two numbers."); \
+        if(!IS_NUMBER(peek(0)) || !IS_NUMBER(peek(1))) { \
+            runtimeError("Operands must be two numbers."); \
             return KK_RUNTIME_ERROR; \
         } \
-        KkValue b = pop(vm); \
-        KkValue a = pop(vm); \
-        push(vm, op(a, b)); \
+        KkValue b = pop(); \
+        KkValue a = pop(); \
+        push(op(a, b)); \
     } while(0);
 
-#define BINARY_OP_STRING(vm, op) \
+#define BINARY_OP_STRING(op) \
     do { \
-        if(!IS_STRING(peek(vm, 0)) || !IS_STRING(peek(vm, 1))) { \
-            runtimeError(vm, "Operands must be two strings."); \
+        if(!IS_STRING(peek(0)) || !IS_STRING(peek(1))) { \
+            runtimeError("Operands must be two strings."); \
             return KK_RUNTIME_ERROR; \
         } \
-        KkValue b = pop(vm); \
-        KkValue a = pop(vm); \
-        push(vm, op(a, b)); \
+        KkValue b = pop(); \
+        KkValue a = pop(); \
+        push(op(a, b)); \
     } while(0);
 
     for(;;) {
 #ifdef DEBUG_TRACE_EXECUTION
-        printStack(vm);
-        int offset = vm->pc - vm->chunk->codes; // (vm->pc - vm->chunk->codes) / sizeof(byte_t)
-        disassembleInstruction(vm->chunk, offset);
+        printStack();
+        int offset = vm.pc - vm.chunk->codes; // (vm.pc - vm.chunk->codes) / sizeof(byte_t)
+        disassembleInstruction(vm.chunk, offset);
 #endif /* DEBUG_TRACE_EXECUTION */
         byte_t instruction = READ_BYTE();
         switch(instruction) {
             case OP_CONSTANT: {
                 int index = READ_BYTE();
                 KkValue constant = READ_CONSTANT(index);
-                push(vm, constant);
+                push(constant);
                 break;
             }
             case OP_FALSE: {
-                push(vm, BOOL(false));
+                push(BOOL(false));
                 break;
             }
             case OP_TRUE: {
-                push(vm, BOOL(true));
+                push(BOOL(true));
                 break;
             }
             case OP_NIL: {
-                push(vm, NIL);
+                push(NIL);
                 break;
             }
             case OP_GREATER: {
-                BINARY_OP(vm, greater);
+                BINARY_OP(greater);
                 break;
             }
             case OP_LESS: {
-                BINARY_OP(vm, less);
+                BINARY_OP(less);
                 break;
             }
             case OP_NEGATE: {
-                KkValue value = peek(vm, 0);
+                KkValue value = peek(0);
                 if(!IS_NUMBER(value)) {
-                    runtimeError(vm, "Operand must be a number.");
+                    runtimeError("Operand must be a number.");
                     return KK_RUNTIME_ERROR;
                 }
-                if(IS_INTEGER(value)) push(vm, INTEGER(-AS_INTEGER(pop(vm))));
-                if(IS_FLOAT(value)) push(vm, FLOAT(-AS_FLOAT(pop(vm))));
+                if(IS_INTEGER(value)) push(INTEGER(-AS_INTEGER(pop())));
+                if(IS_FLOAT(value)) push(FLOAT(-AS_FLOAT(pop())));
                 break;
             }
             case OP_ADD: {
                 // peek(1) maybe better than peek(0) because of reading habits
-                if(IS_STRING(peek(vm, 1))) {
-                    BINARY_OP_STRING(vm, str_add);
-                } else if(IS_NUMBER(peek(vm, 1))) {
-                    BINARY_OP(vm, add);
+                if(IS_STRING(peek(1))) {
+                    BINARY_OP_STRING(str_add);
+                } else if(IS_NUMBER(peek(1))) {
+                    BINARY_OP(add);
                 }
                 break;
             }
             case OP_SUBSTRACT: {
-                BINARY_OP(vm, substract);
+                BINARY_OP(substract);
                 break;
             }
             case OP_MULTIPLY: {
-                BINARY_OP(vm, multiply);
+                BINARY_OP(multiply);
                 break;
             }
             case OP_DIVIDE: {
-                BINARY_OP(vm, divide);
+                BINARY_OP(divide);
                 break;
             }
             case OP_NOT: {
-                KkValue k_value = pop(vm);
-                push(vm, IS_ZERO(k_value) ? BOOL(true) : BOOL(false));
+                KkValue k_value = pop();
+                push(IS_ZERO(k_value) ? BOOL(true) : BOOL(false));
                 break;
             }
             case OP_EQUAL: {
-                KkValue b = pop(vm);
-                KkValue a = pop(vm);
+                KkValue b = pop();
+                KkValue a = pop();
                 if(a.type != b.type) {
-                    runtimeError(vm, "Values of different types should not be compared.");
+                    runtimeError("Values of different types should not be compared.");
                     return KK_RUNTIME_ERROR;
                 }
-                push(vm, isEqual(a, b) ? BOOL(true) : BOOL(false));
+                push(isEqual(a, b) ? BOOL(true) : BOOL(false));
                 break;
             }
             case OP_RETURN: {
                 printf("return ");
-                printValue(pop(vm));
+                printValue(pop());
                 printf("\n");
                 return KK_OK;
             }
@@ -232,16 +230,16 @@ InterpretResult run(VM * vm) {
 #undef BINARY_OP_STRING
 }
 
-InterpretResult interpret(VM * vm, const char * source) {
-    if(!compile(source, vm->chunk)) {
-        resetChunk(vm->chunk);
+InterpretResult interpret(const char * source) {
+    if(!compile(source, vm.chunk)) {
+        resetChunk(vm.chunk);
         return KK_COMPILE_ERROR;
     }
 
-    vm->pc = vm->chunk->codes;
+    vm.pc = vm.chunk->codes;
 
-    InterpretResult result = run(vm);
-    // reset vm->chunk after interpreter executed.
-    resetChunk(vm->chunk);
+    InterpretResult result = run();
+    // reset vm.chunk after interpreter executed.
+    resetChunk(vm.chunk);
     return result;
 }

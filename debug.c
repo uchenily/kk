@@ -53,8 +53,8 @@ int disassembleInstruction(Chunk * chunk, int offset) {
     }
 }
 
-void printStack(VM * vm) {
-    for(KkValue * slot = vm->stack; slot < vm->stackTop; slot++) {
+void printStack() {
+    for(KkValue * slot = vm.stack; slot < vm.stackTop; slot++) {
         printf("[ ");
         printValue(*slot);
         printf(" ]");

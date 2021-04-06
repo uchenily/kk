@@ -2,28 +2,27 @@
 #define KK_VM_H
 
 #include "chunk.h"
+#include "table.h"
 
 #define STACK_MAX 1024
 
 typedef struct {
     Chunk *   chunk;
     byte_t *  pc; /* program counter */
-    // how to relate vm and objects without using pointers to pass around?
-    // in the meanwhile, i don't want to use a global variable vm.
-    // define like this: freeObjects(VM * vm, Object * objects) maybe an idea.
     Object *  objects;
+    Table     strings;
     KkValue * stackTop;
-    // Flexible Array Member(FAM)
-    // variable length array must be last member of structure
-    KkValue   stack[]; /* use a fixed size stack, to keep it sample  */
+    KkValue   stack[STACK_MAX]; /* use a fixed size stack, to keep it sample  */
 } VM;
 
-VM * initVM();
-void resetVM(VM * vm);
+extern VM vm;
 
-InterpretResult interpret(VM * vm, const char * source);
+void initVM();
+void resetVM();
 
-void push(VM * vm, KkValue value);
-KkValue pop(VM * vm);
+InterpretResult interpret(const char * source);
+
+void push(KkValue value);
+KkValue pop();
 
 #endif /* KK_VM_H */
