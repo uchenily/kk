@@ -39,22 +39,8 @@ bool isEqual(KkValue a, KkValue b) {
         case VAL_NIL:       return true;
         case VAL_INTEGER:   return AS_INTEGER(a) == AS_INTEGER(b);
         case VAL_FLOAT:     return AS_FLOAT(a) == AS_FLOAT(b);
-        case VAL_OBJECT: {
-            Object * aObject = AS_OBJECT(a);
-            Object * bObject = AS_OBJECT(b);
-            if(aObject->type != bObject->type) return false;
-
-            switch(aObject->type) {
-                case OBJ_STRING: {
-                    ObjString * aString = AS_STRING(a);
-                    ObjString * bString = AS_STRING(b);
-                    return aString->length == bString->length &&
-                        (memcmp(aString->chars, bString->chars,aString->length) == 0);
-                }
-                default:
-                    return false;
-            }
-        }
+        // we can use == on two objects since we had hash table.
+        case VAL_OBJECT:    return AS_OBJECT(a) == AS_OBJECT(b);
         default:
             return false; // unreachable.
     }

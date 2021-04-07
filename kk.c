@@ -4,7 +4,6 @@
 #include "value.h"
 #include "vm.h"
 #include "memory.h"
-#include "string.h"
 
 void repl() {
     char line[1024];

@@ -2,6 +2,7 @@
 #include "memory.h"
 #include "object.h"
 #include "values.h"
+#include "table.h"
 #include "vm.h"
 
 #define ALLOC_OBJECT(structType, objType) \
@@ -22,24 +23,53 @@ static Object * allocateObject(int length, ObjType type) {
     return object;
 }
 
-static ObjString * allocateString(char * chars, int length) {
+static uint32_t hashString(const char * key, int length) {
+    uint32_t hash = 2166136261u;
+
+    for(int i = 0; i < length; i++) {
+        hash ^= (uint8_t)key[i];
+        hash *= 16777619;
+    }
+
+    return hash;
+}
+
+static ObjString * allocateString(char * chars, int length, uint32_t hash) {
     ObjString * result = ALLOC_OBJECT(ObjString, OBJ_STRING);
     result->length = length;
     result->chars = chars;
+    result->hash = hash;
+
+    tableSet(&vm.strings, result, NIL);
 
     return result;
 }
 
 ObjString * copyString(const char * chars, int length) {
+    uint32_t hash = hashString(chars, length);
+    ObjString * interned = tableFindString(&vm.strings, chars, length, hash);
+
+    if(interned != NULL) return interned;
+
     char * heapChars = ALLOC(char, sizeof(char) * (length + 1));
     memcpy(heapChars, chars, length);
     heapChars[length] = '\0';
 
-    return allocateString(heapChars, length);
+    return allocateString(heapChars, length, hash);
 }
 
+/* pointer chars should not point to a constant value because if this value
+ * is interned and call free(chars) will raise an error. */
 ObjString * createString(char * chars, int length) {
-    return allocateString(chars, length);
+    uint32_t hash = hashString(chars, length);
+    ObjString * interned = tableFindString(&vm.strings, chars, length, hash);
+
+    if(interned != NULL) {
+        FREE_ARRAY(char, chars, length + 1);
+        return interned;
+    }
+
+    return allocateString(chars, length, hash);
 }
 
 void printObject(Object * object) {

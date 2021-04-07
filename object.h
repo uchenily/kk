@@ -1,6 +1,8 @@
 #ifndef KK_OBJECT_H
 #define KK_OBJECT_H
 
+#include "common.h"
+
 typedef enum {
     OBJ_STRING,
 } ObjType;
@@ -29,9 +31,10 @@ struct Object {
 };
 
 typedef struct {
-    Object  object;
-    int     length;
-    char *  chars;
+    Object      object;
+    int         length;
+    char *      chars;
+    uint32_t    hash;
 } ObjString;
 
 ObjString * copyString(const char * chars, int length);

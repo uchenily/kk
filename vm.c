@@ -30,10 +30,13 @@ void initVM() {
     vm.chunk = ALLOC(Chunk, sizeof(Chunk));
     initChunk(vm.chunk);
     vm.objects = NULL;
+    initTable(&vm.strings);
+
     resetStack();
 }
 
 void resetVM() {
+    freeTable(&vm.strings);
     freeObjects(vm.objects);
     FREE(Chunk, vm.chunk);
 }
