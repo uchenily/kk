@@ -49,7 +49,6 @@ typedef enum {
     TOKEN_FOR,              // for
     TOKEN_DEF,              // def
     TOKEN_IF,               // if
-    //TOKEN_NIL,              // nil
     TOKEN_OR,               // or
     TOKEN_RETURN,           // return
     TOKEN_SELF,             // self
